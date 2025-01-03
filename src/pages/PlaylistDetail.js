@@ -5,6 +5,12 @@ import { FaPlay, FaHeart, FaClock } from 'react-icons/fa';
 import { userPlaylists } from '../data/library';
 import { useAudio } from '../context/AudioContext';
 
+const formatTime = (seconds) => {
+  const minutes = Math.floor(seconds / 60);
+  const secondsRemaining = seconds % 60;
+  return `${minutes}:${secondsRemaining.toString().padStart(2, '0')}`;
+};
+
 const PlaylistDetail = () => {
   const { id } = useParams();
   const playlist = userPlaylists.find(p => p.id === parseInt(id));
@@ -131,7 +137,9 @@ const PlaylistDetail = () => {
                   </div>
                 </td>
                 <td className="py-4 text-gray-400">{song.artist}</td>
-                <td className="py-4 text-gray-400">3:45</td>
+                <td className="py-4 text-gray-400">
+                  {formatTime(song.duration)}
+                </td>
               </motion.tr>
             ))}
           </tbody>

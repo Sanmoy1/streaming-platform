@@ -17,8 +17,10 @@ const Player = () => {
   const [volume, setVolume] = useState(1);
   const [isMuted, setIsMuted] = useState(false);
   const [progress, setProgress] = useState(0);
+  const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
 
   // Handle play/pause
   useEffect(() => {
@@ -40,16 +42,18 @@ const Player = () => {
         audioRef.current.pause();
       }
     }
-  }, [isPlaying, currentTrack]);
+  }, [isPlaying]);
 
   // Handle track change
   useEffect(() => {
     if (currentTrack && audioRef.current) {
       setIsLoading(true);
+      setProgress(0);
+      setCurrentTime(0);
       audioRef.current.src = currentTrack.audio || 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3';
       
       // Wait for audio to be loaded before playing
-      audioRef.current.addEventListener('canplay', () => {
+      const handleCanPlay = () => {
         setIsLoading(false);
         if (isPlaying) {
           const playPromise = audioRef.current.play();
@@ -59,23 +63,58 @@ const Player = () => {
             });
           }
         }
-      });
+      };
 
-      // Handle loading errors
-      audioRef.current.addEventListener('error', () => {
+      const handleError = () => {
         console.error("Error loading audio");
         setIsLoading(false);
-      });
+      };
+
+      audioRef.current.addEventListener('canplay', handleCanPlay);
+      audioRef.current.addEventListener('error', handleError);
+
+      return () => {
+        if (audioRef.current) {
+          audioRef.current.removeEventListener('canplay', handleCanPlay);
+          audioRef.current.removeEventListener('error', handleError);
+        }
+      };
     }
   }, [currentTrack, isPlaying]);
 
   // Update progress bar
   const handleTimeUpdate = () => {
-    if (audioRef.current) {
-      const progress = (audioRef.current.currentTime / audioRef.current.duration) * 100;
-      setProgress(progress);
-      setDuration(audioRef.current.duration);
+    if (audioRef.current && !isDragging) {
+      const current = audioRef.current.currentTime;
+      setCurrentTime(current);
+      setProgress((current / currentTrack.duration) * 100);
     }
+  };
+
+  // Handle seeking start
+  const handleSeekStart = () => {
+    setIsDragging(true);
+  };
+
+  // Handle seeking
+  const handleSeek = (e) => {
+    const value = parseFloat(e.target.value);
+    setProgress(value);
+    if (!isDragging) {
+      const time = (value / 100) * currentTrack.duration;
+      setCurrentTime(time);
+    }
+  };
+
+  // Handle seeking end
+  const handleSeekEnd = (e) => {
+    const value = parseFloat(e.target.value);
+    const time = (value / 100) * currentTrack.duration;
+    if (audioRef.current) {
+      audioRef.current.currentTime = time;
+      setCurrentTime(time);
+    }
+    setIsDragging(false);
   };
 
   // Handle volume change
@@ -89,15 +128,6 @@ const Player = () => {
       setIsMuted(true);
     } else {
       setIsMuted(false);
-    }
-  };
-
-  // Handle seeking
-  const handleSeek = (e) => {
-    const value = parseFloat(e.target.value);
-    if (audioRef.current) {
-      audioRef.current.currentTime = (value / 100) * duration;
-      setProgress(value);
     }
   };
 
@@ -176,7 +206,7 @@ const Player = () => {
 
             <div className="w-full max-w-2xl flex items-center gap-2">
               <span className="text-xs text-gray-400 w-12 text-right">
-                {formatTime(audioRef.current?.currentTime)}
+                {formatTime(currentTime)}
               </span>
               <input
                 type="range"
@@ -184,6 +214,10 @@ const Player = () => {
                 max="100"
                 value={progress}
                 onChange={handleSeek}
+                onMouseDown={handleSeekStart}
+                onMouseUp={handleSeekEnd}
+                onTouchStart={handleSeekStart}
+                onTouchEnd={handleSeekEnd}
                 disabled={isLoading}
                 className="flex-1 h-1 bg-white/10 rounded-full appearance-none cursor-pointer
                          [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3
@@ -192,7 +226,7 @@ const Player = () => {
                          disabled:opacity-50 disabled:cursor-not-allowed"
               />
               <span className="text-xs text-gray-400 w-12">
-                {formatTime(duration)}
+                {formatTime(currentTrack.duration)}
               </span>
             </div>
           </div>
@@ -230,7 +264,11 @@ const Player = () => {
         ref={audioRef}
         onTimeUpdate={handleTimeUpdate}
         onEnded={nextTrack}
-        onLoadedMetadata={(e) => setDuration(e.target.duration)}
+        onLoadedMetadata={(e) => {
+          setDuration(currentTrack.duration);
+          setProgress(0);
+          setCurrentTime(0);
+        }}
         preload="auto"
       />
     </div>
