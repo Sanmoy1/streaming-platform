@@ -7,20 +7,25 @@ import Explore from './pages/Explore';
 import Library from './pages/Library';
 import Profile from './pages/Profile';
 import About from './pages/About';
+import PlaylistDetail from './pages/PlaylistDetail';
+import { AudioProvider } from './context/AudioContext';
 
 function App() {
   return (
-    <Router>
-      <Routes>
-        <Route path="/" element={<Layout />}>
-          <Route index element={<Home />} />
-          <Route path="explore" element={<Explore />} />
-          <Route path="library" element={<Library />} />
-          <Route path="profile" element={<Profile />} />
-          <Route path="about" element={<About />} />
-        </Route>
-      </Routes>
-    </Router>
+    <AudioProvider>
+      <Router>
+        <Routes>
+          <Route path="/" element={<Layout />}>
+            <Route index element={<Home />} />
+            <Route path="explore" element={<Explore />} />
+            <Route path="library" element={<Library />} />
+            <Route path="playlist/:id" element={<PlaylistDetail />} />
+            <Route path="profile" element={<Profile />} />
+            <Route path="about" element={<About />} />
+          </Route>
+        </Routes>
+      </Router>
+    </AudioProvider>
   );
 }
 
