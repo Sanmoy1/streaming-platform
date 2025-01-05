@@ -1,5 +1,5 @@
 import React, { useRef, useEffect, useState } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { FaPlay, FaPause, FaStepForward, FaStepBackward, FaVolumeUp, FaVolumeMute } from 'react-icons/fa';
 import { useAudio } from '../../context/AudioContext';
 import NowPlaying from './NowPlaying';
@@ -21,6 +21,7 @@ const Player = () => {
   const [duration, setDuration] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
+  const [showVolumePopup, setShowVolumePopup] = useState(false);
 
   // Handle play/pause
   useEffect(() => {
@@ -156,15 +157,15 @@ const Player = () => {
 
   return (
     <div className="fixed bottom-0 left-0 right-0 bg-background/95 backdrop-blur-lg border-t border-white/10">
-      <div className="container mx-auto px-6 py-4">
-        <div className="flex items-center justify-between">
+      <div className="container mx-auto px-4 py-3 md:px-6 md:py-4">
+        <div className="flex flex-col md:flex-row items-center gap-3 md:gap-0 md:justify-between">
           {/* Now Playing Info */}
-          <div className="w-1/4">
+          <div className="w-full md:w-1/4 flex-shrink-0">
             <NowPlaying />
           </div>
 
           {/* Player Controls */}
-          <div className="flex-1 flex flex-col items-center gap-2">
+          <div className="w-full md:flex-1 flex flex-col items-center gap-2">
             <div className="flex items-center gap-4">
               <motion.button
                 whileHover={{ scale: 1.1 }}
@@ -173,7 +174,7 @@ const Player = () => {
                 className="p-2 hover:text-primary transition-colors"
                 disabled={isLoading}
               >
-                <FaStepBackward />
+                <FaStepBackward className="text-lg" />
               </motion.button>
 
               <motion.button
@@ -187,9 +188,9 @@ const Player = () => {
                 {isLoading ? (
                   <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
                 ) : isPlaying ? (
-                  <FaPause />
+                  <FaPause className="text-lg" />
                 ) : (
-                  <FaPlay className="ml-1" />
+                  <FaPlay className="text-lg ml-1" />
                 )}
               </motion.button>
 
@@ -200,12 +201,23 @@ const Player = () => {
                 className="p-2 hover:text-primary transition-colors"
                 disabled={isLoading}
               >
-                <FaStepForward />
+                <FaStepForward className="text-lg" />
+              </motion.button>
+
+              {/* Mobile Volume Button */}
+              <motion.button
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+                onClick={() => setShowVolumePopup(true)}
+                className="p-2 hover:text-primary transition-colors md:hidden"
+                disabled={isLoading}
+              >
+                {isMuted ? <FaVolumeMute className="text-lg" /> : <FaVolumeUp className="text-lg" />}
               </motion.button>
             </div>
 
-            <div className="w-full max-w-2xl flex items-center gap-2">
-              <span className="text-xs text-gray-400 w-12 text-right">
+            <div className="w-full max-w-2xl flex items-center gap-2 px-2">
+              <span className="text-[10px] md:text-xs text-gray-400 w-8 md:w-12 text-right">
                 {formatTime(currentTime)}
               </span>
               <input
@@ -225,14 +237,14 @@ const Player = () => {
                          [&::-webkit-slider-thumb]:bg-primary
                          disabled:opacity-50 disabled:cursor-not-allowed"
               />
-              <span className="text-xs text-gray-400 w-12">
+              <span className="text-[10px] md:text-xs text-gray-400 w-8 md:w-12">
                 {formatTime(currentTrack.duration)}
               </span>
             </div>
           </div>
 
-          {/* Volume Control */}
-          <div className="w-1/4 flex justify-end items-center gap-2">
+          {/* Desktop Volume Control */}
+          <div className="hidden md:flex w-1/4 justify-end items-center gap-2">
             <motion.button
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.9 }}
@@ -259,6 +271,54 @@ const Player = () => {
           </div>
         </div>
       </div>
+
+      {/* Mobile Volume Popup */}
+      <AnimatePresence>
+        {showVolumePopup && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowVolumePopup(false)}
+              className="fixed inset-0 bg-black/50 z-50"
+            />
+            <motion.div
+              initial={{ opacity: 0, y: 100 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 100 }}
+              className="fixed bottom-24 left-4 right-4 bg-background/95 backdrop-blur-lg
+                       p-4 rounded-lg shadow-xl z-50 mx-auto
+                       border border-white/10 max-w-sm"
+            >
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-sm font-medium">Volume Control</span>
+                <motion.button
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
+                  onClick={handleMuteToggle}
+                  className="p-1.5 hover:text-primary transition-colors"
+                >
+                  {isMuted ? <FaVolumeMute className="text-lg" /> : <FaVolumeUp className="text-lg" />}
+                </motion.button>
+              </div>
+              <input
+                type="range"
+                min="0"
+                max="1"
+                step="0.01"
+                value={isMuted ? 0 : volume}
+                onChange={handleVolumeChange}
+                className="w-full h-1.5 bg-white/10 rounded-full appearance-none cursor-pointer
+                         [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4
+                         [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full
+                         [&::-webkit-slider-thumb]:bg-primary
+                         [&::-webkit-slider-thumb]:mt-[-6px]"
+              />
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
 
       <audio
         ref={audioRef}
