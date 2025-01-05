@@ -25,7 +25,7 @@ const SearchBar = ({ onSearch }) => {
             onFocus={() => setIsFocused(true)}
             onBlur={() => setIsFocused(false)}
             placeholder="Search for songs, artists, or podcasts..."
-            className="w-full px-6 py-4 pl-12 rounded-full bg-white/10 backdrop-blur-lg 
+            className="w-full px-6 py-4 pl-12 pr-10 rounded-full bg-white/10 backdrop-blur-lg 
                      text-white placeholder-gray-400 focus:outline-none focus:ring-2 
                      focus:ring-primary/50 transition-all duration-300"
           />
@@ -39,8 +39,8 @@ const SearchBar = ({ onSearch }) => {
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: 20 }}
               type="submit"
-              className="absolute right-4 top-1/2 transform -translate-y-1/2 
-                       bg-primary px-4 py-1 rounded-full text-sm font-medium
+              className="absolute top-2 right-2 transform
+                       bg-primary px-6 py-2.5 rounded-full text-sm font-medium
                        hover:bg-primary/90 transition-colors duration-300"
             >
               Search
