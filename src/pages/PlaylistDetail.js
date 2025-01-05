@@ -87,11 +87,11 @@ const PlaylistDetail = () => {
       <div className="container mx-auto px-6 mt-8">
         <table className="w-full">
           <thead>
-            <tr className="text-gray-400 border-b border-white/10">
-              <th className="pb-4 text-left font-medium w-16">#</th>
-              <th className="pb-4 text-left font-medium">Title</th>
-              <th className="pb-4 text-left font-medium">Artist</th>
-              <th className="pb-4 text-left font-medium w-16">
+            <tr className="text-white border-b border-white/10">
+              <th className="pb-4 text-left font-bold w-16">#</th>
+              <th className="pb-4 text-left font-bold">Title</th>
+              <th className="pb-4 text-left font-bold">Artist</th>
+              <th className="pb-4 text-left font-bold w-16">
                 <FaClock />
               </th>
             </tr>
@@ -107,7 +107,7 @@ const PlaylistDetail = () => {
                 className={`group hover:bg-white/5 transition-colors cursor-pointer
                           ${currentTrack?.id === song.id ? 'text-primary' : ''}`}
               >
-                <td className="py-4 text-gray-400">
+                <td className="py-4 text-white font-bold">
                   {currentTrack?.id === song.id ? (
                     <div className="w-4 h-4 relative">
                       <div className="absolute inset-0 flex items-center justify-center">
@@ -136,8 +136,8 @@ const PlaylistDetail = () => {
                     <span className="font-medium">{song.title}</span>
                   </div>
                 </td>
-                <td className="py-4 text-gray-400">{song.artist}</td>
-                <td className="py-4 text-gray-400">
+                <td className="py-4 text-white font-bold">{song.artist}</td>
+                <td className="py-4 text-white font-bold">
                   {formatTime(song.duration)}
                 </td>
               </motion.tr>
